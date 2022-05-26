@@ -17,3 +17,14 @@ public enum LCEPagedState<T: Collection & Equatable, K: Equatable>: Equatable {
     case content(data: T, isListEnded: Bool)
     case error(previousData: T, isListEnded: Bool, error: K)
 }
+
+extension LCEPagedState {
+    var data: T {
+        switch self {
+        case .loading(previousData: let data, state: _),
+                .content(data: let data, isListEnded: _),
+                .error(previousData: let data, isListEnded: _, error: _):
+            return data
+        }
+    }
+}

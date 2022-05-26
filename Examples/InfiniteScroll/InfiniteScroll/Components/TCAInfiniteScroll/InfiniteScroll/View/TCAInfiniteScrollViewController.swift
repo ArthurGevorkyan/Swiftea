@@ -10,7 +10,7 @@ import Foundation
 import Swiftea
 import UIKit
 
-enum InfiniteScrollViewEvent: Equatable {
+enum TCAInfiniteScrollViewEvent: Equatable {
     case viewDidLoad
     case viewDidPullToRefresh
     case viewDidTapReloadDataButton
@@ -19,78 +19,28 @@ enum InfiniteScrollViewEvent: Equatable {
     case viewWillScrollToLastItem
 }
 
-enum InfiniteScrollViewError: Error, Equatable {
-    case api
-}
+struct TCAInfiniteScrollViewState: Equatable {
+    let contentState: LCEPagedState<[InfiniteScrollItemDisplayData], InfiniteScrollViewError>
 
-struct InfiniteScrollViewState: Equatable {
-    let contentState: LCEPagedState<[InfiniteScrollViewModel], InfiniteScrollViewError>
-
-    static var initial: InfiniteScrollViewState {
-        InfiniteScrollViewState(
+    static var initial: TCAInfiniteScrollViewState {
+        TCAInfiniteScrollViewState(
             contentState: .content(data: [], isListEnded: false)
         )
     }
 }
 
-struct InfiniteScrollViewModel: Equatable {
-    let title: String
-    let subtitle: String
-    let id: String
-    let details: String
-}
-
 // swiftlint:disable:next type_body_length
-final class InfiniteScrollViewController: UIViewController {
-    struct InfiniteScrollDisplayData: Hashable {
+final class TCAInfiniteScrollViewController: UIViewController {
+    struct TCAInfiniteScrollDisplayData: Hashable {
         public let title: String
         public let subtitle: String
         public let id: String
         public let details: String
     }
 
-    // MARK: Private data structures
-
-    private struct TitleItem: Hashable {
-        let title: String
-    }
-
-    private struct EmptyItem: Hashable {
-        let title: String
-    }
-
-    private struct LoadingErrorEmptyItem: Hashable {
-        let title: String
-    }
-
-    private struct LoadingItem: Hashable {
-        private let id = UUID()
-
-        static func == (lhs: Self, rhs: Self) -> Bool {
-            return false
-        }
-
-        func hash(into hasher: inout Hasher) {
-            hasher.combine(id)
-        }
-    }
-
-    private struct LoadingErrorContentItem: Hashable {
-        private let id = UUID()
-        let title: String
-
-        static func == (lhs: Self, rhs: Self) -> Bool {
-            return false
-        }
-
-        func hash(into hasher: inout Hasher) {
-            hasher.combine(id)
-        }
-    }
-
     // MARK: Private properties
 
-    private let viewStore: ViewStore<InfiniteScrollViewState, InfiniteScrollViewEvent>
+    private let viewStore: ViewStore<TCAInfiniteScrollViewState, TCAInfiniteScrollViewEvent>
 
     private var toastNotificationManager: ToastNotificationManagerProtocol
 
@@ -102,7 +52,7 @@ final class InfiniteScrollViewController: UIViewController {
     private let uiSubject = PassthroughSubject<Void, Never>()
 
     init(
-        viewStore: ViewStore<InfiniteScrollViewState, InfiniteScrollViewEvent>,
+        viewStore: ViewStore<TCAInfiniteScrollViewState, TCAInfiniteScrollViewEvent>,
         toastNotificationManager: ToastNotificationManagerProtocol
     ) {
         self.viewStore = viewStore
@@ -237,9 +187,9 @@ final class InfiniteScrollViewController: UIViewController {
         }
     }
 
-    private func toDisplayData(from viewModels: [InfiniteScrollViewModel]) -> [InfiniteScrollDisplayData] {
+    private func toDisplayData(from viewModels: [InfiniteScrollItemDisplayData]) -> [TCAInfiniteScrollDisplayData] {
         let displayData = viewModels.map { model in
-            InfiniteScrollDisplayData(
+            TCAInfiniteScrollDisplayData(
                 title: model.title,
                 subtitle: model.subtitle,
                 id: model.id,
@@ -250,7 +200,7 @@ final class InfiniteScrollViewController: UIViewController {
     }
 
     // swiftlint:disable:next cyclomatic_complexity
-    private func update(state: InfiniteScrollViewState) {
+    private func update(state: TCAInfiniteScrollViewState) {
         switch state.contentState {
         case let .content(data, isListEnded):
             if let refreshControl = tableView.refreshControl {
@@ -337,7 +287,7 @@ final class InfiniteScrollViewController: UIViewController {
         }
     }
 
-    private func updateLoading(with displayData: [InfiniteScrollDisplayData], loadingState: LCEPagedLoadingState) {
+    private func updateLoading(with displayData: [TCAInfiniteScrollDisplayData], loadingState: LCEPagedLoadingState) {
         var snapshot = NSDiffableDataSourceSnapshot<Int, AnyHashable>()
         snapshot.appendSections([0])
 
@@ -356,7 +306,7 @@ final class InfiniteScrollViewController: UIViewController {
         }
     }
 
-    private func updateContent(with displayData: [InfiniteScrollDisplayData], isListEnded: Bool) {
+    private func updateContent(with displayData: [TCAInfiniteScrollDisplayData], isListEnded: Bool) {
         var snapshot = NSDiffableDataSourceSnapshot<Int, AnyHashable>()
         snapshot.appendSections([0])
 
@@ -374,7 +324,7 @@ final class InfiniteScrollViewController: UIViewController {
     }
 }
 
-extension InfiniteScrollViewController: UITableViewDelegate {
+extension TCAInfiniteScrollViewController: UITableViewDelegate {
     func tableView(_ tableView: UITableView, willDisplay cell: UITableViewCell, forRowAt indexPath: IndexPath) {
         let numberOfSections = dataSource.numberOfSections(in: tableView)
         if numberOfSections > 0, numberOfSections - 1 == indexPath.section {

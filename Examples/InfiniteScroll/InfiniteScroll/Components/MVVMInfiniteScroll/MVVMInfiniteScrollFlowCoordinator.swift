@@ -2,16 +2,16 @@
 //  InfiniteScrollFlowCoordinator.swift
 //  InfiniteScroll
 //
-//  Created by Dmitrii Coolerov on 01.02.2022.
+//  Created by Arthur Gevorkyan on 21.05.2022.
 //
 
 import Foundation
 import Swinject
 import UIKit
 
-final class InfiniteScrollFlowCoordinator: FlowCoordinatorProtocol {
-    private weak var window: UIWindow!
-    private weak var rootViewController: UINavigationController!
+final class MVVMInfiniteScrollFlowCoordinator: FlowCoordinatorProtocol {
+    private weak var window: UIWindow?
+    private weak var rootViewController: UINavigationController?
     private let resolver: Resolver
     private var childFlowCoordinator: FlowCoordinatorProtocol?
 
@@ -31,24 +31,30 @@ final class InfiniteScrollFlowCoordinator: FlowCoordinatorProtocol {
         }
         state = .started
 
-        let viewController = InfiniteScrollModuleBuilder(
+        let viewController = MVVMInfiniteScrollModuleBuilder(
             resolver: resolver,
             moduleOutput: self
         ).build()
-        viewController.title = "InfiniteScroll"
+        viewController.title = "MVVMInfiniteScroll"
 
         let nvc = UINavigationController(rootViewController: viewController)
         rootViewController = nvc
 
         let tabBarItem = UITabBarItem(
-            title: "InfiniteScroll",
-            image: UIImage(systemName: "star"),
-            selectedImage: UIImage(systemName: "star.fill")
+            title: "MVVMInfiniteScroll",
+            image: UIImage(systemName: "scribble"),
+            selectedImage: UIImage(systemName: "scribble.variable")
         )
         nvc.tabBarItem = tabBarItem
 
         rootViewController = nvc
-        window.rootViewController = nvc
+
+        if let existingRoot = window?.rootViewController {
+            existingRoot.addChild(nvc)
+        } else {
+            window?.rootViewController = nvc
+        }
+
     }
 
     func handleDeeplink(with _: URL) {
@@ -66,7 +72,7 @@ final class InfiniteScrollFlowCoordinator: FlowCoordinatorProtocol {
     }
 }
 
-extension InfiniteScrollFlowCoordinator: InfiniteScrollModuleOutput {
+extension MVVMInfiniteScrollFlowCoordinator: InfiniteScrollModuleOutput {
     func infiniteScrollModuleWantsToOpenDetails(with id: String) {
         resolver.resolve(ToastNotificationManagerProtocol.self)!.showNotification(
             with: .info(

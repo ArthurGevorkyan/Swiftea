@@ -13,15 +13,15 @@ import XCTest
 
 @testable import InfiniteScroll
 
-class InfiniteScrollTests: XCTestCase {
+class TCAInfiniteScrollTests: XCTestCase {
     var infiniteScrollRepository: InfiniteScrollRepositoryProtocolMock!
 
-    var viewStore: ViewStore<InfiniteScrollViewState, InfiniteScrollViewEvent>!
+    var viewStore: ViewStore<TCAInfiniteScrollViewState, TCAInfiniteScrollViewEvent>!
     var viewController: UIViewController!
 
     var cancellable = Set<AnyCancellable>()
 
-    var eventPublusher = PassthroughSubject<InfiniteScrollEvent, Never>()
+    var eventPublusher = PassthroughSubject<TCAInfiniteScrollEvent, Never>()
 
     override func setUpWithError() throws {
         let container = Container()
@@ -40,15 +40,15 @@ class InfiniteScrollTests: XCTestCase {
             toastNotificationManager
         }
 
-        let feature = InfiniteScrollFeature()
+        let feature = TCAInfiniteScrollFeature()
 
-        let testReducer = Reducer<InfiniteScrollState, InfiniteScrollEvent, InfiniteScrollCommand> { state, event in
+        let testReducer = Reducer<TCAInfiniteScrollState, TCAInfiniteScrollEvent, TCAInfiniteScrollCommand> { state, event in
             self.eventPublusher.send(event)
             return feature.getReducer().dispatch(state: state, event: event)
         }
 
-        let store = Store<InfiniteScrollState, InfiniteScrollEvent, InfiniteScrollCommand, InfiniteScrollEnvironment>(
-            state: InfiniteScrollState(),
+        let store = Store<TCAInfiniteScrollState, TCAInfiniteScrollEvent, TCAInfiniteScrollCommand, InfiniteScrollEnvironment>(
+            state: TCAInfiniteScrollState(),
             reducer: testReducer,
             commandHandler: feature.getCommandHandler(
                 environment: InfiniteScrollEnvironment(
@@ -58,13 +58,13 @@ class InfiniteScrollTests: XCTestCase {
             )
         )
 
-        viewStore = ViewStore<InfiniteScrollViewState, InfiniteScrollViewEvent>(
+        viewStore = ViewStore<TCAInfiniteScrollViewState, TCAInfiniteScrollViewEvent>(
             store: store,
             eventMapper: feature.getEventMapper(),
             stateMapper: feature.getStateMapper()
         )
 
-        viewController = InfiniteScrollViewController(
+        viewController = TCAInfiniteScrollViewController(
             viewStore: viewStore,
             toastNotificationManager: resolver.resolve(ToastNotificationManagerProtocol.self)!
         )
@@ -95,14 +95,14 @@ class InfiniteScrollTests: XCTestCase {
             }
         }.store(in: &cancellable)
 
-        var states: [InfiniteScrollViewState] = []
+        var states: [TCAInfiniteScrollViewState] = []
         viewStore.statePublisher.sink { state in
             states.append(state)
 
-            let finalState = InfiniteScrollViewState(
+            let finalState = TCAInfiniteScrollViewState(
                 contentState: .content(
                     data: (0...15).map { index in
-                        InfiniteScrollViewModel(title: "\(index)", subtitle: "", id: "", details: "")
+                        InfiniteScrollItemDisplayData(title: "\(index)", subtitle: "", id: "", details: "")
                     },
                     isListEnded: true
                 )
@@ -124,39 +124,39 @@ class InfiniteScrollTests: XCTestCase {
         // Assert
         wait(for: [finalExpectation], timeout: 1)
 
-        let referenseStates: [InfiniteScrollViewState] = [
-            InfiniteScrollViewState(
+        let referenseStates: [TCAInfiniteScrollViewState] = [
+            TCAInfiniteScrollViewState(
                 contentState: .content(
                     data: [],
                     isListEnded: false
                 )
             ),
-            InfiniteScrollViewState(
+            TCAInfiniteScrollViewState(
                 contentState: .loading(
                     previousData: [],
                     state: .refresh
                 )
             ),
-            InfiniteScrollViewState(
+            TCAInfiniteScrollViewState(
                 contentState: .content(
                     data: (0...14).map { index in
-                        InfiniteScrollViewModel(title: "\(index)", subtitle: "", id: "", details: "")
+                        InfiniteScrollItemDisplayData(title: "\(index)", subtitle: "", id: "", details: "")
                     },
                     isListEnded: false
                 )
             ),
-            InfiniteScrollViewState(
+            TCAInfiniteScrollViewState(
                 contentState: .loading(
                     previousData: (0...14).map { index in
-                        InfiniteScrollViewModel(title: "\(index)", subtitle: "", id: "", details: "")
+                        InfiniteScrollItemDisplayData(title: "\(index)", subtitle: "", id: "", details: "")
                     },
                     state: .nextPage
                 )
             ),
-            InfiniteScrollViewState(
+            TCAInfiniteScrollViewState(
                 contentState: .content(
                     data: (0...15).map { index in
-                        InfiniteScrollViewModel(title: "\(index)", subtitle: "", id: "", details: "")
+                        InfiniteScrollItemDisplayData(title: "\(index)", subtitle: "", id: "", details: "")
                     },
                     isListEnded: true
                 )
@@ -186,14 +186,14 @@ class InfiniteScrollTests: XCTestCase {
             }
         }.store(in: &cancellable)
 
-        var states: [InfiniteScrollViewState] = []
+        var states: [TCAInfiniteScrollViewState] = []
         viewStore.statePublisher.sink { state in
             states.append(state)
 
-            let finalState = InfiniteScrollViewState(
+            let finalState = TCAInfiniteScrollViewState(
                 contentState: .content(
                     data: (15...20).map { index in
-                        InfiniteScrollViewModel(title: "\(index)", subtitle: "", id: "", details: "")
+                        InfiniteScrollItemDisplayData(title: "\(index)", subtitle: "", id: "", details: "")
                     },
                     isListEnded: true
                 )
@@ -215,39 +215,39 @@ class InfiniteScrollTests: XCTestCase {
         // Assert
         wait(for: [finalExpectation], timeout: 1)
 
-        let referenseStates: [InfiniteScrollViewState] = [
-            InfiniteScrollViewState(
+        let referenseStates: [TCAInfiniteScrollViewState] = [
+            TCAInfiniteScrollViewState(
                 contentState: .content(
                     data: [],
                     isListEnded: false
                 )
             ),
-            InfiniteScrollViewState(
+            TCAInfiniteScrollViewState(
                 contentState: .loading(
                     previousData: [],
                     state: .refresh
                 )
             ),
-            InfiniteScrollViewState(
+            TCAInfiniteScrollViewState(
                 contentState: .content(
                     data: (0...14).map { index in
-                        InfiniteScrollViewModel(title: "\(index)", subtitle: "", id: "", details: "")
+                        InfiniteScrollItemDisplayData(title: "\(index)", subtitle: "", id: "", details: "")
                     },
                     isListEnded: false
                 )
             ),
-            InfiniteScrollViewState(
+            TCAInfiniteScrollViewState(
                 contentState: .loading(
                     previousData: (0...14).map { index in
-                        InfiniteScrollViewModel(title: "\(index)", subtitle: "", id: "", details: "")
+                        InfiniteScrollItemDisplayData(title: "\(index)", subtitle: "", id: "", details: "")
                     },
                     state: .refresh
                 )
             ),
-            InfiniteScrollViewState(
+            TCAInfiniteScrollViewState(
                 contentState: .content(
                     data: (15...20).map { index in
-                        InfiniteScrollViewModel(title: "\(index)", subtitle: "", id: "", details: "")
+                        InfiniteScrollItemDisplayData(title: "\(index)", subtitle: "", id: "", details: "")
                     },
                     isListEnded: true
                 )
@@ -274,14 +274,14 @@ class InfiniteScrollTests: XCTestCase {
             }
         }.store(in: &cancellable)
 
-        var states: [InfiniteScrollViewState] = []
+        var states: [TCAInfiniteScrollViewState] = []
         viewStore.statePublisher.sink { state in
             states.append(state)
 
-            let finalState = InfiniteScrollViewState(
+            let finalState = TCAInfiniteScrollViewState(
                 contentState: .error(
                     previousData: (0...14).map { index in
-                        InfiniteScrollViewModel(title: "\(index)", subtitle: "", id: "", details: "")
+                        InfiniteScrollItemDisplayData(title: "\(index)", subtitle: "", id: "", details: "")
                     },
                     isListEnded: false,
                     error: .api
@@ -304,39 +304,39 @@ class InfiniteScrollTests: XCTestCase {
         // Assert
         wait(for: [finalExpectation], timeout: 1)
 
-        let referenseStates: [InfiniteScrollViewState] = [
-            InfiniteScrollViewState(
+        let referenseStates: [TCAInfiniteScrollViewState] = [
+            TCAInfiniteScrollViewState(
                 contentState: .content(
                     data: [],
                     isListEnded: false
                 )
             ),
-            InfiniteScrollViewState(
+            TCAInfiniteScrollViewState(
                 contentState: .loading(
                     previousData: [],
                     state: .refresh
                 )
             ),
-            InfiniteScrollViewState(
+            TCAInfiniteScrollViewState(
                 contentState: .content(
                     data: (0...14).map { index in
-                        InfiniteScrollViewModel(title: "\(index)", subtitle: "", id: "", details: "")
+                        InfiniteScrollItemDisplayData(title: "\(index)", subtitle: "", id: "", details: "")
                     },
                     isListEnded: false
                 )
             ),
-            InfiniteScrollViewState(
+            TCAInfiniteScrollViewState(
                 contentState: .loading(
                     previousData: (0...14).map { index in
-                        InfiniteScrollViewModel(title: "\(index)", subtitle: "", id: "", details: "")
+                        InfiniteScrollItemDisplayData(title: "\(index)", subtitle: "", id: "", details: "")
                     },
                     state: .nextPage
                 )
             ),
-            InfiniteScrollViewState(
+            TCAInfiniteScrollViewState(
                 contentState: .error(
                     previousData: (0...14).map { index in
-                        InfiniteScrollViewModel(title: "\(index)", subtitle: "", id: "", details: "")
+                        InfiniteScrollItemDisplayData(title: "\(index)", subtitle: "", id: "", details: "")
                     },
                     isListEnded: false,
                     error: .api
@@ -364,14 +364,14 @@ class InfiniteScrollTests: XCTestCase {
             }
         }.store(in: &cancellable)
 
-        var states: [InfiniteScrollViewState] = []
+        var states: [TCAInfiniteScrollViewState] = []
         viewStore.statePublisher.sink { state in
             states.append(state)
 
-            let finalState = InfiniteScrollViewState(
+            let finalState = TCAInfiniteScrollViewState(
                 contentState: .error(
                     previousData: (0...14).map { index in
-                        InfiniteScrollViewModel(title: "\(index)", subtitle: "", id: "", details: "")
+                        InfiniteScrollItemDisplayData(title: "\(index)", subtitle: "", id: "", details: "")
                     },
                     isListEnded: false,
                     error: .api
@@ -394,39 +394,39 @@ class InfiniteScrollTests: XCTestCase {
         // Assert
         wait(for: [finalExpectation], timeout: 1)
 
-        let referenseStates: [InfiniteScrollViewState] = [
-            InfiniteScrollViewState(
+        let referenseStates: [TCAInfiniteScrollViewState] = [
+            TCAInfiniteScrollViewState(
                 contentState: .content(
                     data: [],
                     isListEnded: false
                 )
             ),
-            InfiniteScrollViewState(
+            TCAInfiniteScrollViewState(
                 contentState: .loading(
                     previousData: [],
                     state: .refresh
                 )
             ),
-            InfiniteScrollViewState(
+            TCAInfiniteScrollViewState(
                 contentState: .content(
                     data: (0...14).map { index in
-                        InfiniteScrollViewModel(title: "\(index)", subtitle: "", id: "", details: "")
+                        InfiniteScrollItemDisplayData(title: "\(index)", subtitle: "", id: "", details: "")
                     },
                     isListEnded: false
                 )
             ),
-            InfiniteScrollViewState(
+            TCAInfiniteScrollViewState(
                 contentState: .loading(
                     previousData: (0...14).map { index in
-                        InfiniteScrollViewModel(title: "\(index)", subtitle: "", id: "", details: "")
+                        InfiniteScrollItemDisplayData(title: "\(index)", subtitle: "", id: "", details: "")
                     },
                     state: .refresh
                 )
             ),
-            InfiniteScrollViewState(
+            TCAInfiniteScrollViewState(
                 contentState: .error(
                     previousData: (0...14).map { index in
-                        InfiniteScrollViewModel(title: "\(index)", subtitle: "", id: "", details: "")
+                        InfiniteScrollItemDisplayData(title: "\(index)", subtitle: "", id: "", details: "")
                     },
                     isListEnded: false,
                     error: .api
@@ -464,14 +464,14 @@ class InfiniteScrollTests: XCTestCase {
             }
         }.store(in: &cancellable)
 
-        var states: [InfiniteScrollViewState] = []
+        var states: [TCAInfiniteScrollViewState] = []
         viewStore.statePublisher.sink { state in
             states.append(state)
 
-            let finalState = InfiniteScrollViewState(
+            let finalState = TCAInfiniteScrollViewState(
                 contentState: .content(
                     data: (0...20).map { index in
-                        InfiniteScrollViewModel(title: "\(index)", subtitle: "", id: "", details: "")
+                        InfiniteScrollItemDisplayData(title: "\(index)", subtitle: "", id: "", details: "")
                     },
                     isListEnded: true
                 )
@@ -493,46 +493,46 @@ class InfiniteScrollTests: XCTestCase {
         // Assert
         wait(for: [finalExpectation], timeout: 20)
 
-        let referenseStates: [InfiniteScrollViewState] = [
-            InfiniteScrollViewState(contentState: .content(data: [], isListEnded: false)),
-            InfiniteScrollViewState(contentState: .loading(previousData: [], state: InfiniteScroll.LCEPagedLoadingState.refresh)),
-            InfiniteScrollViewState(
+        let referenseStates: [TCAInfiniteScrollViewState] = [
+            TCAInfiniteScrollViewState(contentState: .content(data: [], isListEnded: false)),
+            TCAInfiniteScrollViewState(contentState: .loading(previousData: [], state: InfiniteScroll.LCEPagedLoadingState.refresh)),
+            TCAInfiniteScrollViewState(
                 contentState: .content(
                     data: (0...14).map { index in
-                        InfiniteScrollViewModel(title: "\(index)", subtitle: "", id: "", details: "")
+                        InfiniteScrollItemDisplayData(title: "\(index)", subtitle: "", id: "", details: "")
                     },
                     isListEnded: false
                 )
             ),
-            InfiniteScrollViewState(
+            TCAInfiniteScrollViewState(
                 contentState: .loading(
                     previousData: (0...14).map { index in
-                        InfiniteScrollViewModel(title: "\(index)", subtitle: "", id: "", details: "")
+                        InfiniteScrollItemDisplayData(title: "\(index)", subtitle: "", id: "", details: "")
                     },
                     state: .nextPage
                 )
             ),
-            InfiniteScrollViewState(
+            TCAInfiniteScrollViewState(
                 contentState: .error(
                     previousData: (0...14).map { index in
-                        InfiniteScrollViewModel(title: "\(index)", subtitle: "", id: "", details: "")
+                        InfiniteScrollItemDisplayData(title: "\(index)", subtitle: "", id: "", details: "")
                     },
                     isListEnded: false,
                     error: .api
                 )
             ),
-            InfiniteScrollViewState(
+            TCAInfiniteScrollViewState(
                 contentState: .loading(
                     previousData: (0...14).map { index in
-                        InfiniteScrollViewModel(title: "\(index)", subtitle: "", id: "", details: "")
+                        InfiniteScrollItemDisplayData(title: "\(index)", subtitle: "", id: "", details: "")
                     },
                     state: .nextPage
                 )
             ),
-            InfiniteScrollViewState(
+            TCAInfiniteScrollViewState(
                 contentState: .content(
                     data: (0...20).map { index in
-                        InfiniteScrollViewModel(title: "\(index)", subtitle: "", id: "", details: "")
+                        InfiniteScrollItemDisplayData(title: "\(index)", subtitle: "", id: "", details: "")
                     },
                     isListEnded: true
                 )

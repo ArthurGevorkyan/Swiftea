@@ -11,7 +11,7 @@ import Swiftea
 import Swinject
 import UIKit
 
-final class InfiniteScrollModuleBuilder {
+final class TCAInfiniteScrollModuleBuilder {
     private let resolver: Resolver
     private weak var moduleOutput: InfiniteScrollModuleOutput!
 
@@ -24,9 +24,9 @@ final class InfiniteScrollModuleBuilder {
     }
 
     func build() -> UIViewController {
-        let feature = InfiniteScrollFeature()
-        let store = Store<InfiniteScrollState, InfiniteScrollEvent, InfiniteScrollCommand, InfiniteScrollEnvironment>(
-            state: InfiniteScrollState(),
+        let feature = TCAInfiniteScrollFeature()
+        let store = Store<TCAInfiniteScrollState, TCAInfiniteScrollEvent, TCAInfiniteScrollCommand, InfiniteScrollEnvironment>(
+            state: TCAInfiniteScrollState(),
             reducer: feature.getReducer(),
             commandHandler: feature.getCommandHandler(
                 environment: InfiniteScrollEnvironment(
@@ -36,13 +36,13 @@ final class InfiniteScrollModuleBuilder {
             )
         )
 
-        let viewStore = ViewStore<InfiniteScrollViewState, InfiniteScrollViewEvent>(
+        let viewStore = ViewStore<TCAInfiniteScrollViewState, TCAInfiniteScrollViewEvent>(
             store: store,
             eventMapper: feature.getEventMapper(),
             stateMapper: feature.getStateMapper()
         )
 
-        let viewController = InfiniteScrollViewController(
+        let viewController = TCAInfiniteScrollViewController(
             viewStore: viewStore,
             toastNotificationManager: resolver.resolve(ToastNotificationManagerProtocol.self)!
         )

@@ -10,7 +10,7 @@ import UIKit
 class SceneDelegate: UIResponder, UIWindowSceneDelegate {
     var window: UIWindow?
 
-    private var flowCoordinator: FlowCoordinatorProtocol!
+    private var flowCoordinators: [FlowCoordinatorProtocol] = []
     private let container = RootContainer()
 
     func scene(
@@ -29,10 +29,20 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         window.backgroundColor = .black
         self.window = window
 
-        flowCoordinator = InfiniteScrollFlowCoordinator(window: window, resolver: container.resolver)
+        let tabBarController = UITabBarController()
+        window.rootViewController = tabBarController
+
+        let aTCAFlowCoordinator = TCAInfiniteScrollFlowCoordinator(window: window, resolver: container.resolver)
+        let aMVVMFlowCoordinator = MVVMInfiniteScrollFlowCoordinator(window: window, resolver: container.resolver)
+
+        flowCoordinators.append(aTCAFlowCoordinator)
+        flowCoordinators.append(aMVVMFlowCoordinator)
+
         window.makeKeyAndVisible()
 
-        flowCoordinator.start()
+        flowCoordinators.forEach {
+            $0.start()
+        }
     }
 
     func sceneDidDisconnect(_ scene: UIScene) {

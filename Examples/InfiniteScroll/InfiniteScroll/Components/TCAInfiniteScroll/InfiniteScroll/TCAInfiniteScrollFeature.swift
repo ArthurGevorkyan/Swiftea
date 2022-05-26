@@ -9,7 +9,7 @@ import Combine
 import Foundation
 import Swiftea
 
-struct InfiniteScrollState: Equatable {
+struct TCAInfiniteScrollState: Equatable {
     enum LoadingState: Equatable {
         case error(InfiniteScrollAPIError)
         case refresh
@@ -25,7 +25,7 @@ struct InfiniteScrollState: Equatable {
     var data: [InfiniteScrollModel] = []
 }
 
-enum InfiniteScrollEvent: Equatable {
+enum TCAInfiniteScrollEvent: Equatable {
     case loadInitialData
     case updateInitialData(data: [InfiniteScrollModel], isListEnded: Bool)
     case updateNextData(data: [InfiniteScrollModel], isListEnded: Bool)
@@ -39,7 +39,7 @@ enum InfiniteScrollEvent: Equatable {
     case playbackScreenDidOpen
 }
 
-enum InfiniteScrollCommand: Equatable {
+enum TCAInfiniteScrollCommand: Equatable {
     case loadInitialPageData
     case loadNextPageData(page: Int)
     case cancelAllRequests
@@ -47,22 +47,10 @@ enum InfiniteScrollCommand: Equatable {
     case openDetails(id: String)
 }
 
-enum InfiniteScrollAPIError: Error, Equatable {
-    case networkError
-}
-
-struct InfiniteScrollEnvironment {
-    let pageLentgth = 15
-    let mainQueue: DispatchQueue = .main
-    let backgroundQueue: DispatchQueue = .global(qos: .background)
-    let infiniteScrollRepository: InfiniteScrollRepositoryProtocol
-    weak var moduleOutput: InfiniteScrollModuleOutput?
-}
-
-struct InfiniteScrollFeature {
+struct TCAInfiniteScrollFeature {
     // swiftlint:disable:next cyclomatic_complexity function_body_length
-    func getReducer() -> Reducer<InfiniteScrollState, InfiniteScrollEvent, InfiniteScrollCommand> {
-        let reducer = Reducer<InfiniteScrollState, InfiniteScrollEvent, InfiniteScrollCommand>(reduce: { state, event in
+    func getReducer() -> Reducer<TCAInfiniteScrollState, TCAInfiniteScrollEvent, TCAInfiniteScrollCommand> {
+        let reducer = Reducer<TCAInfiniteScrollState, TCAInfiniteScrollEvent, TCAInfiniteScrollCommand>(reduce: { state, event in
             switch event {
             case .loadInitialData:
                 var state = state
@@ -157,8 +145,8 @@ struct InfiniteScrollFeature {
     // swiftlint:disable:next function_body_length
     func getCommandHandler(
         environment: InfiniteScrollEnvironment
-    ) -> CommandHandler<InfiniteScrollCommand, InfiniteScrollEvent, InfiniteScrollEnvironment> {
-        let commandHanlder = CommandHandler<InfiniteScrollCommand, InfiniteScrollEvent, InfiniteScrollEnvironment>(
+    ) -> CommandHandler<TCAInfiniteScrollCommand, TCAInfiniteScrollEvent, InfiniteScrollEnvironment> {
+        let commandHanlder = CommandHandler<TCAInfiniteScrollCommand, TCAInfiniteScrollEvent, InfiniteScrollEnvironment>(
             reduce: { command, environment in
                 switch command {
                 case .loadInitialPageData:
@@ -167,14 +155,14 @@ struct InfiniteScrollFeature {
                         pageLentgth: environment.pageLentgth
                     )
                     .subscribe(on: environment.backgroundQueue)
-                    .map { result -> InfiniteScrollEvent in
+                    .map { result -> TCAInfiniteScrollEvent in
                         .updateInitialData(data: result, isListEnded: result.count < environment.pageLentgth)
                     }
                     .mapError { _ in
                         .networkError
                     }
                     .catch { error in
-                        Just<InfiniteScrollEvent>(.updateDataWithError(error: error))
+                        Just<TCAInfiniteScrollEvent>(.updateDataWithError(error: error))
                     }
                     .eraseToAnyPublisher()
 
@@ -184,23 +172,23 @@ struct InfiniteScrollFeature {
                         pageLentgth: environment.pageLentgth
                     )
                     .subscribe(on: environment.backgroundQueue)
-                    .map { result -> InfiniteScrollEvent in
+                    .map { result -> TCAInfiniteScrollEvent in
                         .updateNextData(data: result, isListEnded: result.count < environment.pageLentgth)
                     }
                     .mapError { _ in
                         .networkError
                     }
                     .catch { error in
-                        Just<InfiniteScrollEvent>(.updateDataWithError(error: error))
+                        Just<TCAInfiniteScrollEvent>(.updateDataWithError(error: error))
                     }
                     .eraseToAnyPublisher()
 
                 case .cancelAllRequests:
-                    return Just<InfiniteScrollEvent>(.receiveCancelAllRequests)
+                    return Just<TCAInfiniteScrollEvent>(.receiveCancelAllRequests)
                         .eraseToAnyPublisher()
 
                 case let .openDetails(id):
-                    return Future<InfiniteScrollEvent, Never> { promise in
+                    return Future<TCAInfiniteScrollEvent, Never> { promise in
                         DispatchQueue.main.async {
                             environment.moduleOutput?.infiniteScrollModuleWantsToOpenDetails(
                                 with: id
@@ -219,11 +207,11 @@ struct InfiniteScrollFeature {
         return commandHanlder
     }
 
-    func getStateMapper() -> (InfiniteScrollState) -> InfiniteScrollViewState {
-        let eventMapper: (InfiniteScrollState) -> InfiniteScrollViewState = { state in
-            let contentState: LCEPagedState<[InfiniteScrollViewModel], InfiniteScrollViewError> = {
-                let data: [InfiniteScrollViewModel] = state.data.map { model in
-                    InfiniteScrollViewModel(
+    func getStateMapper() -> (TCAInfiniteScrollState) -> TCAInfiniteScrollViewState {
+        let eventMapper: (TCAInfiniteScrollState) -> TCAInfiniteScrollViewState = { state in
+            let contentState: LCEPagedState<[InfiniteScrollItemDisplayData], InfiniteScrollViewError> = {
+                let data: [InfiniteScrollItemDisplayData] = state.data.map { model in
+                    InfiniteScrollItemDisplayData(
                         title: model.title,
                         subtitle: model.subtitle,
                         id: model.id,
@@ -244,15 +232,15 @@ struct InfiniteScrollFeature {
                     return .content(data: data, isListEnded: state.isListEnded)
                 }
             }()
-            return InfiniteScrollViewState(
+            return TCAInfiniteScrollViewState(
                 contentState: contentState
             )
         }
         return eventMapper
     }
 
-    func getEventMapper() -> (InfiniteScrollViewEvent) -> InfiniteScrollEvent {
-        let eventMapper: (InfiniteScrollViewEvent) -> InfiniteScrollEvent = { viewEvent in
+    func getEventMapper() -> (TCAInfiniteScrollViewEvent) -> TCAInfiniteScrollEvent {
+        let eventMapper: (TCAInfiniteScrollViewEvent) -> TCAInfiniteScrollEvent = { viewEvent in
             switch viewEvent {
             case .viewDidLoad:
                 return .loadInitialData
